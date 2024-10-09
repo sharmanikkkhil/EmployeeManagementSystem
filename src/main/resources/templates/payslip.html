@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payslip</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .payslip-container {
+            background-color: #fff;
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 800px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+        .company-details, .employee-details {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 0fr;
+            margin-bottom: 20px;
+        }
+        .earnings-deductions-table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+        .earnings-deductions-table th, .earnings-deductions-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .earnings-deductions-table th {
+            background-color: #f1f1f1;
+            font-weight: bold;
+        }
+        .net-pay-section {
+            text-align: center;
+            margin: 20px;
+        }
+        .net-pay-section p {
+            font-size: 1.25rem;
+            font-weight: bold;
+			margin: 0;
+        }
+        .signature-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+        .signature-section p {
+            margin-top: 20px;
+            font-size: 0.875rem;
+        }
+        .footer-note {
+            text-align: center;
+            font-size: 0.75rem;
+            font-style: italic;
+            color: #666;
+            margin-top: 20px;
+        }
+
+        /* Styles for the button container fixed at the bottom */
+        .button-container {
+            background-color: #fff;
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 800px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .button-container button {
+            font-size: 1rem;
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .button-container button:hover {
+            background-color: #45a049;
+        }
+        .button-container .cancel-button {
+            background-color: #f44336;
+        }
+        .button-container .cancel-button:hover {
+            background-color: #d32f2f;
+        }
+
+        /* Hide the buttons during print and remove gaps */
+		@media print {
+		    body {
+		        margin: 0;
+		        padding: 0;
+		    }
+		    .payslip-container {
+		        margin: 0;
+		        padding: 5px;
+		        border: none; /* Optional: to remove border in print */
+		        box-shadow: none; /* Optional: to remove shadow in print */
+		    }
+		    .button-container {
+		        display: none;
+		    }
+		}
+    </style>
+    
+    <!-- Include html2pdf.js for generating PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+    <script>
+        // Function to download only the payslip container as a PDF
+        function downloadPayslip() {
+            var element = document.querySelector('.payslip-container');
+            html2pdf().from(element).set({
+                margin: [0, 0, 0, 0], // Set margins to zero
+                filename: 'payslip.pdf'
+            }).save();
+        }
+
+        // Function to print only the payslip container
+        function printPayslip() {
+            var printContents = document.querySelector('.payslip-container').outerHTML;
+            var originalContents = document.body.innerHTML;
+
+            document.body.innerHTML = printContents;
+            window.print();
+
+            document.body.innerHTML = originalContents;
+        }
+
+        // Function to cancel and redirect to another page
+        function cancelAction() {
+            window.location.href = "/employee/dashboard";  // Redirect to the dashboard or any other page
+        }
+    </script>
+</head>
+<body>
+
+    <div class="payslip-container">
+        <h1>Payslip</h1>
+        <div class="company-details">
+            <p><span th:text="${employee.officeAddressLine1}"></span></p>
+            <p><span th:text="${employee.officeAddressLine2}"></span></p>
+            <p><span th:text="${employee.officePincode}"></span></p>
+        </div>
+    
+        <div class="grid-container">
+            <div>
+                <p>Employee Name: <span th:text="${employee.fullName}"></span></p>
+                <p>Employee Code: <span th:text="${employee.employeeCode}"></span></p>
+                <p>Employee Company Email: <span th:text="${employee.companyEmail}"></span></p>
+                <p>Date of Joining: <span th:text="${employee.dateOfJoining}"></span></p>
+                <p>Pay Period: <span th:text="${employee.payDate}"></span></p>
+            </div>
+        </div>
+    
+        <table class="earnings-deductions-table">
+            <thead>
+                <tr>
+                    <th>Earnings</th>
+                    <th>Amount</th>
+                    <th>Deductions</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Basic Salary</td>
+                    <td th:text="${employee.basicSalary}"></td>
+                    <td>Provident Fund</td>
+                    <td th:text="${employee.providentFund}"></td>
+                </tr>
+                <tr>
+                    <td>Incentive</td>
+                    <td th:text="${employee.incentive}"></td>
+                    <td>Professional Tax</td>
+                    <td th:text="${employee.professionalTax}"></td>
+                </tr>
+                <tr>
+                    <td>House Rent Allowance</td>
+                    <td th:text="${employee.houseRentAllowance}"></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="font-bold">
+                    <td>Total Earnings</td>
+                    <td th:text="${employee.totalEarnings}"></td>
+                    <td>Total Deductions</td>
+                    <td th:text="${employee.totalDeductions}"></td>
+                </tr>
+            </tbody>
+        </table>
+    
+        <div class="net-pay-section">
+            <p>Net Pay: <span th:text="${employee.netPay}"></span></p>
+            <p>(<span th:text="${employee.netPayInWords}"></span>)</p>
+        </div>
+    
+        <div class="signature-section">
+            <p>___________________________<br>Employer Signature</p>
+        </div>
+    
+        <p class="footer-note">This is a system-generated payslip</p>
+    </div>
+
+    <!-- Add buttons for download, print, and cancel at the bottom of the page -->
+    <div class="button-container">
+        <button onclick="downloadPayslip()">Download</button>
+        <button onclick="printPayslip()">Print</button>
+        <button onclick="cancelAction()" class="cancel-button">Cancel</button>
+    </div>
+
+</body>
+</html>
